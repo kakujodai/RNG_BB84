@@ -1,5 +1,5 @@
-from qrng import string_to_bits, xor_bits
-from bb84 import bb84_protocol
+from rng.qrng import string_to_bits, xor_bits
+from functions.bb84 import bb84_protocol
 
 # demonstrates whole workflow via using the bb84 to generate a shared key & gets the message
 # to eventually encrypt, send and decrypt.
@@ -17,7 +17,7 @@ def alice_generate_and_encrypt(message, num_bits=64):
     return encrypted_bits, shared_key, message_bits, eavesdrop_detected
 
 def bob_decrypt(encrypted_bits, shared_key):
-    from qrng import bits_to_string
+    from rng.qrng import bits_to_string
     decrypted_bits = xor_bits(encrypted_bits, shared_key)
     return bits_to_string(decrypted_bits)
 

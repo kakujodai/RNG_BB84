@@ -10,7 +10,7 @@ Workflow:
 """
 
 from qiskit import QuantumCircuit, Aer, execute
-from qrng import random_basis
+from rng.qrng import random_basis, qrng_bits
 
 def bb84_protocol(num_bits):
     """
@@ -58,4 +58,4 @@ def bb84_protocol(num_bits):
     final_key = [bit for i, bit in enumerate(shared_key) if i not in test_indices]
     return final_key, shared_indices, alice_bits, alice_bases, bob_bases, bob_results, eavesdrop_detected
 
-from qrng import qrng_bits
+

@@ -63,13 +63,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-def main():
-	length = int(input("Enter number of random bits: "))
-	bits = qrng_bits(length)
-	print("Random bits with quantum bases:")
-	for i, (bit, basis) in enumerate(bits):
-		print(f"Bit {i+1}: {bit} (Basis: {basis})")
-
-if __name__ == "__main__":
-	main()
