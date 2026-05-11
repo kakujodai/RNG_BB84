@@ -3,13 +3,14 @@ def random_basis():
 	Randomly selects a quantum basis: 'Z' (computational) or 'X' (Hadamard) using quantum randomness.
 	Returns: 'Z' or 'X'
 	"""
-	from qiskit import QuantumCircuit, execute
-	from qiskit.providers.aer import Aer
+	from qiskit import QuantumCircuit, transpile
+	from qiskit_aer import AerSimulator
 	circuit = QuantumCircuit(1, 1)
 	circuit.h(0)
 	circuit.measure(0, 0)
-	simulator = Aer.get_backend('qasm_simulator')
-	result = execute(circuit, simulator, shots=1).result()
+	simulator = AerSimulator()
+	compiled = transpile(circuit, simulator)
+	result = simulator.run(compiled, shots=1).result()
 	bit = int(list(result.get_counts().keys())[0])
 	return 'Z' if bit == 0 else 'X'
 
@@ -21,18 +22,19 @@ def qrng_bits(length):
 	Returns:
 		list of tuples: Each tuple is (bit, basis)
 	"""
-	from qiskit import QuantumCircuit, execute
-	from qiskit.providers.aer import Aer
+	from qiskit import QuantumCircuit, transpile
+	from qiskit_aer import AerSimulator
 
 	bits = []
-	simulator = Aer.get_backend('qasm_simulator')
+	simulator = AerSimulator()
 	for _ in range(length):
 		basis = random_basis()
 		circuit = QuantumCircuit(1, 1)
 		if basis == 'X':
 			circuit.h(0)
 		circuit.measure(0, 0)
-		result = execute(circuit, simulator, shots=1).result()
+		compiled = transpile(circuit, simulator)
+		result = simulator.run(compiled, shots=1).result()
 		bit = int(list(result.get_counts().keys())[0])
 		bits.append((bit, basis))
 	return bits

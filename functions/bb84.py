@@ -9,7 +9,8 @@ Workflow:
 6. This ensures secure key exchange and encrypted communication.
 """
 
-from qiskit import QuantumCircuit, Aer, execute
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
 from rng.qrng import random_basis, qrng_bits
 
 def bb84_protocol(num_bits):
@@ -26,20 +27,21 @@ def bb84_protocol(num_bits):
     bob_bases = [random_basis() for _ in range(num_bits)]
 
     # Bob measures Alice's qubits 
-    simulator = Aer.get_backend('qasm_simulator')
+    simulator = AerSimulator()
     bob_results = []
     for i in range(num_bits):
         qc = QuantumCircuit(1, 1)
-        # Alice's bit in her basis
-        if alice_bases[i] == 'X':
-            qc.h(0)
+        # Alive's bit, ecode then rotate
         if alice_bits[i] == 1:
             qc.x(0)
+        if alice_bases[i] == 'X':
+            qc.h(0)
         # Bob measures in his basis
         if bob_bases[i] == 'X':
             qc.h(0)
         qc.measure(0, 0)
-        result = execute(qc, simulator, shots=1).result()
+        compiled = transpile(qc, simulator)
+        result = simulator.run(compiled, shots=1).result()
         measured_bit = int(list(result.get_counts().keys())[0])
         bob_results.append(measured_bit)
 

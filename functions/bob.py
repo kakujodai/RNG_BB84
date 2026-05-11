@@ -4,7 +4,8 @@ Bob receives qubits from Alice and measures them in random bases.
 """
 
 from rng.qrng import random_basis
-from qiskit import QuantumCircuit, Aer, execute
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
 
 
 def measure_qubit(alice_bit, alice_basis, bob_basis):
@@ -19,21 +20,23 @@ def measure_qubit(alice_bit, alice_basis, bob_basis):
     Returns:
         int: The measured bit (0 or 1)
     """
-    simulator = Aer.get_backend('qasm_simulator')
+    simulator = AerSimulator()
     qc = QuantumCircuit(1, 1)
     
-    # Prepare Alice's qubit
-    if alice_basis == 'X':
-        qc.h(0)
+    # Encode bit first, then rotate basis.
+    # For X-basis, bit=1 must become |->, which is H(X|0>). 
     if alice_bit == 1:
         qc.x(0)
+    if alice_basis == 'X':
+        qc.h(0)
     
     # Bob measures in his basis
     if bob_basis == 'X':
         qc.h(0)
     
     qc.measure(0, 0)
-    result = execute(qc, simulator, shots=1).result()
+    compiled = transpile(qc, simulator)
+    result = simulator.run(compiled, shots=1).result()
     measured_bit = int(list(result.get_counts().keys())[0])
     return measured_bit
 

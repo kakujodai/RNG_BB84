@@ -233,7 +233,7 @@ def run_comparison_matrix():
     for random_mode in ["qrng", "prng"]:
         print("\n" + "-" * 74)
         print(f"Random mode: {random_mode.upper()}")
-        print("Attack | Detect Rate | Eve Basis Acc | Eve Bit Acc | Avg Final Key")
+        print("Attack | Detect Rate % | Eve Basis Acc % | Eve Bit Acc %| Avg Final Key")
 
         for attack in ATTACKS:
             detected_count = 0
@@ -300,17 +300,10 @@ def run_comparison_matrix():
                     f"{attack:20s} | {100 * detect_rate:9.2f}% | {basis_text:12s} | {bit_text:10s} | {avg_key_len:11.1f}"
                 )
 
-    print("\nInterpretation:")
-    print("- In normal attacks, Eve's basis guess is near 50%, so her read accuracy is limited.")
-    print("- Detection rates stay non-zero because wrong-basis Eve measurements introduce errors.")
-    print("- If PRNG seed is compromised, Eve can predict bases and become much more accurate.")
-    print("- That contrast is what supports the QRNG security argument in your presentation.")
-
-
 def main():
     print("\nChoose mode:")
-    print("1) Live step-by-step demo")
-    print("2) QRNG vs PRNG attack comparison matrix")
+    print("1) step-by-step demo")
+    print("2) QRNG vs PRNG comparison")
     choice = (input("Enter 1 or 2 [1]: ").strip() or "1")
 
     if choice == "2":
