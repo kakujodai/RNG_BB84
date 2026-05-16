@@ -137,12 +137,12 @@ def demo_encryption_with_eve(message, eve_attack_type="none"):
     print(f"Shared key available: {len(shared_key)} bits")
     
     if result['eavesdrop_detected']:
-        print("\n⚠️  EAVESDROPPING DETECTED!")
+        print("\nEAVESDROPPING DETECTED!")
         print("Alice and Bob abort the protocol. Message NOT sent.")
         return
     
     if len(shared_key) < len(message_bits):
-        print(f"\n⚠️  NOT ENOUGH KEY! Need {len(message_bits)} bits, have {len(shared_key)}")
+        print(f"\nNOT ENOUGH KEY! Need {len(message_bits)} bits, have {len(shared_key)}")
         print("Encryption aborted.")
         return
     

@@ -9,14 +9,100 @@ What this script is optimized for:
     5) Prompt for Alice message, then encrypt/decrypt.
     6) Compare attacks under QRNG vs PRNG-like generation.
 
-Note: This uses simulator-based quantum randomness from qrng.py.
+Note: QRNG mode uses real IBM quantum hardware through Qiskit Runtime.
 """
 
 import random
 
+import os
+
+from qiskit import QuantumCircuit
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2 as Sampler
+
+
+def _get_ibm_backend(backend_name="ibm_kingston"):
+    """Connect to IBM Quantum using IBM_TOKEN and return a real backend."""
+    token = os.getenv("IBM_TOKEN")
+
+    if token is None:
+        raise ValueError(
+            "IBM_TOKEN is not set. Run: export IBM_TOKEN='your_token_here'"
+        )
+
+    service = QiskitRuntimeService(
+        channel="ibm_quantum_platform",
+        token=token,
+    )
+
+    return service.backend(backend_name)
+
+
+def _real_quantum_random_bitstring(num_random_bits, backend_name="ibm_kingston"):
+    """Generate num_random_bits from a real IBM quantum backend."""
+    if num_random_bits <= 0:
+        return ""
+
+    backend = _get_ibm_backend(backend_name)
+
+    #use at most the backend's available qubits per circuit. If we need more
+    #random bits than that, submit several circuits in one sampler job.
+    max_qubits = min(num_random_bits, getattr(backend, "num_qubits", num_random_bits))
+
+    circuits = []
+    bits_left = num_random_bits
+
+    while bits_left > 0:
+        n = min(max_qubits, bits_left)
+        circuit = QuantumCircuit(n, n)
+        circuit.h(range(n))
+        circuit.measure(range(n), range(n))
+        circuits.append(circuit)
+        bits_left -= n
+
+    pm = generate_preset_pass_manager(
+        backend=backend,
+        optimization_level=1,
+    )
+
+    isa_circuits = [pm.run(circuit) for circuit in circuits]
+
+    sampler = Sampler(mode=backend)
+    job = sampler.run(isa_circuits, shots=1)
+
+    print(f"IBM Quantum job submitted: {job.job_id()}")
+
+    result = job.result()
+
+    bitstring = ""
+    for pub_result in result:
+        bitstring += pub_result.data.c.get_bitstrings()[0]
+
+    return bitstring[:num_random_bits]
+
+
+def qrng_bits(num_bits, backend_name="ibm_kingston"):
+    """
+    Return [(bit, basis), ...] using real IBM quantum randomness.
+
+    Each BB84 position needs two random values:
+      1) Alice/Bob's data bit: 0 or 1
+      2) Alice/Bob's basis: Z or X
+    """
+    raw_bits = _real_quantum_random_bitstring(2 * num_bits, backend_name)
+
+    pairs = []
+    for i in range(num_bits):
+        bit = int(raw_bits[2 * i])
+        basis = "Z" if raw_bits[2 * i + 1] == "0" else "X"
+        pairs.append((bit, basis))
+
+    return pairs
+
+
 from functions.bob import measure_qubit
 from functions.eve import create_attack
-from rng.qrng import qrng_bits, string_to_bits, bits_to_string, xor_bits
+from rng.qrng import string_to_bits, bits_to_string, xor_bits
 
 
 ATTACKS = ["none", "measure-and-resend", "intercept-and-replace", "cloned-state"]
