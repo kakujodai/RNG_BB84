@@ -54,6 +54,7 @@ def write_results_to_file(results, filename="results/simulation_output.txt"):
 def print_to_buffer(*args, **kwargs):
     """Print to the output buffer instead of terminal."""
     print(*args, **kwargs, file=output_buffer)
+    print(*args, **kwargs)
 
 def save_buffer_to_file(filename="results/simulation_output.txt"):
     """Save the buffered output to a file."""
@@ -172,7 +173,7 @@ def _generate_bob_bases(num_bits, random_mode="qrng", prng_seed=99):
         return [basis for _, basis in qrng_bits(num_bits)]
 
     rng = random.Random(prng_seed)
-    return ["Z" if rng.randint(0, 1) == 0 else "X" for _ in range(num_bits)]F
+    return ["Z" if rng.randint(0, 1) == 0 else "X" for _ in range(num_bits)]
 
 
 def _fmt_first(values, n=24):
