@@ -1,0 +1,137 @@
+
+how to run
+    presentation runner:
+	python presentation_demo.py
+
+    legacy demo runner:
+    python demo.py
+    
+    PRNG SIMPLE sample:
+        python rng/prand.py
+
+    QRNG-only sample:
+        python rng/qrng.py
+
+    unit tests:
+        python -m unittest tests/test_encryption.py
+        python -m unittest tests/test_eve_attacks.py
+	    python -m unittest
+
+files (new folder layout):
+
+rng/qrng.py
+----------
+    python rng/qrng.py
+    prompts for number of random bits and prints generated (bit, basis) pairs.
+
+
+rng/prand.py
+-----------
+    python rng/prand.py
+
+
+functions/bb84.py
+----------
+    implements BB84 protocol simulation for key exchange between Alice and Bob.
+
+main function:
+    bb84_protocol(num_bits):
+	    generates Alice bits/bases
+	    simulates Bob measurements
+	    basis sifting
+	    sample comparison for eavesdrop detection
+	    returns final key and protocol details
+
+NOTE: this is imported by alice.py (not run alone)
+
+
+functions/alice.py
+-----------
+    demo file for alice using the bb84.py file
+
+functions:
+    alice_generate_and_encrypt(message, num_bits=64)
+    bob_decrypt(encrypted_bits, shared_key)
+    eavesdropping decision branch (abort if detected)
+    XOR encryption/decryption of message bits
+
+functions/bob.py
+---------
+    Bob logic for qubit measurement and key extraction.
+
+functions:
+    measure_qubit(alice_bit, alice_basis, bob_basis)
+    measure_qubits(alice_bits, alice_bases, num_qubits=None)
+    extract_key(alice_bits, alice_bases, bob_bases, bob_results)
+
+aka Bob behavior for protocol and tests (demo.py)
+
+functions/eve.py
+---------
+basically just eve attack styles in classes
+    EveAttack (base class)
+    MeasureAndResendAttack
+    InterceptAndReplaceAttack
+    ClonedStateAttack (no cloning theorem)
+    NoAttack/IGNORE
+
+
+demo.py
+----------
+executable demonstration with Alice, Bob, and Eve
+
+    just for ez presentation/demo run to show no-attack vs attack outcomes
+
+tests/test_encryption.py
+---------------------
+unit tests for encryption and QRNG vs PRNG
+    Encryption/decryption correctness
+    Key length sanity checks
+    Basic randomness balance checks
+    Initial attack detection checks
+
+
+tests/test_eve_attacks.py
+----------------------
+statistical and behavioral tests focused on Eve attacks specifically
+    Error rates under measure-and-resend
+    Sampling-based detection behavior
+    Correlation of wrong-basis choices and errors
+    No-Eve vs Eve mismatch-rate comparison
+
+
+Recommended Demo Flow (for class/lab)
+-------------------------------------
+1) PRNG baseline:
+     python rng/prand.py
+
+2) QRNG output format:
+     python rng/qrng.py
+
+3) BB84 + message:
+     python -m functions.alice
+
+4) Eve attack scenarios:
+	 python demo.py
+
+5) validate behavior with tests:
+	 python -m unittest
+
+presentation flow
+-------------------------------------
+1) do PRNG 2x:
+    python rng/prand.py
+
+2) Run one integrated live demo:
+	python presentation_demo.py
+    - shows Alice random bits/bases
+    - shows Eve interception and Eve accuracy
+    - shows what Bob receives/measures
+    - does sifting, eavesdrop test, final key
+    - prompts message, then encrypts/decrypts
+
+3) Run matrix mode in same script:
+	python presentation_demo.py
+    choose option 2
+    - compares all four attack modes under QRNG vs PRNG
+    - optional compromised PRNG seed scenario to show why QRNG helps
